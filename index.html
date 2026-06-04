@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MSBTE Result - Maharashtra State Board of Technical Education</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── MAIN HEADER ── */
+    .header {
+      background: #fff;
+      padding: 20px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .header img.logo {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+    .header-text h1 {
+      font-size: 22px;
+      font-weight: bold;
+      color: #000;
+      line-height: 1.3;
+      font-family: Georgia, serif;
+    }
+    .header-text h2 {
+      font-size: 17px;
+      font-weight: bold;
+      color: #000;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+
+    /* ── PAGE WRAPPER ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── FORM PAGE ── */
+    .form-wrapper {
+      max-width: 760px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+
+    .form-box {
+      background: #FFFFE1;
+      border: 1px solid #d4c4a8;
+      padding: 20px 30px;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 20px;
+    }
+    .form-row label {
+      width: 260px;
+      font-size: 13.5px;
+      font-weight: bold;
+      color: #000;
+      text-decoration: underline;
+      flex-shrink: 0;
+    }
+    .form-row .input-wrap {
+      flex: 1;
+    }
+    .form-row select,
+    .form-row input[type="text"] {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-row select:focus,
+    .form-row input[type="text"]:focus {
+      border-color: #8B0000;
+    }
+    .form-row select.error,
+    .form-row input.error {
+      border-color: #e00;
+    }
+
+    /* captcha display */
+    .captcha-display {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 0;
+      display: inline-block;
+      border-radius: 4px;
+      user-select: none;
+    }
+    .captcha-display canvas {
+      display: block;
+    }
+
+    .error-msg {
+      color: #cc0000;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* button row */
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+    .btn-show {
+      background: #ffffff;
+      color: #000;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 6px 20px;
+      border: 2px solid #FFCC00;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-show:hover {
+      background: #FFFFF0;
+    }
+
+    /* ── LOADING ── */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner {
+      width: 54px;
+      height: 54px;
+      border: 6px solid rgba(255,255,255,0.3);
+      border-top-color: #f5c518;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay p {
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    /* ── RESULT PAGE ── */
+    .result-wrapper {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 20px 40px;
+    }
+
+    .result-card {
+      background: #FFFFF0;
+      border: 1px solid #d4c4a8;
+      padding: 24px 30px;
+    }
+
+    .student-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 40px;
+      margin-bottom: 24px;
+      background: #fff8e8;
+      padding: 16px 20px;
+      border: 1px solid #e0bb60;
+      border-radius: 4px;
+    }
+    .info-row {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .info-label { font-weight: bold; color: #555; min-width: 130px; }
+    .info-value { color: #000; font-weight: 600; }
+
+    /* marks table */
+    .marks-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    .marks-table thead tr {
+      background: #8B0000;
+      color: #fff;
+    }
+    .marks-table th {
+      padding: 9px 8px;
+      text-align: center;
+      border: 1px solid #a00;
+      font-size: 12px;
+    }
+    .marks-table td {
+      padding: 8px 8px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    .marks-table tbody tr:nth-child(even) { background: #fffde7; }
+    .marks-table tbody tr:hover { background: #fff3cd; }
+
+    .pass { color: green; font-weight: bold; }
+    .fail { color: red; font-weight: bold; }
+
+    .result-summary {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      background: #fff8e8;
+      padding: 14px 20px;
+      border: 1px solid #e0bb60;
+      border-radius: 4px;
+    }
+    .summary-item { font-size: 14px; }
+    .summary-item span { font-weight: bold; color: #8B0000; }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 20px;
+      border-radius: 4px;
+      font-size: 15px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .result-badge.pass-badge { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .result-badge.fail-badge { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+    .btn-back {
+      background: #fff;
+      color: #000;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 8px 20px;
+      border: 2px solid #FFCC00;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .btn-back:hover { background: #FFFFF0; }
+
+    @media (max-width: 600px) {
+      .form-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .form-row label { width: auto; }
+      .student-info { grid-template-columns: 1fr; }
+      .header-text h1 { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Fetching Result, Please Wait...</p>
+</div>
+
+<!-- Full Screen Image Container -->
+<div id="fullScreenContainer" style="display: none; position: fixed; inset: 0; background: #000; z-index: 10000; justify-content: center; align-items: center;">
+  <img src="congrats.jpg" style="max-width: 100%; max-height: 100%; object-fit: contain; cursor: pointer;" onclick="closeFullScreen()" />
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <img class="logo" src="https://result.msbte.ac.in/Logo/mainlogo.png"
+       onerror="this.src='https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Maharashtra_State_Board_of_Technical_Education_Logo.png/120px-Maharashtra_State_Board_of_Technical_Education_Logo.png'"
+       alt="MSBTE Logo" />
+  <div class="header-text">
+    <h1>Maharashtra State Board of Technical Education</h1>
+    <h2>महाराष्ट्र राज्य तंत्र शिक्षण मंडळ, मुंबई</h2>
+  </div>
+</div>
+
+<!-- ===== FORM PAGE ===== -->
+<div id="formPage" class="page active">
+  <div class="form-wrapper">
+    <div class="form-box">
+
+      <!-- Row 1: Select type -->
+      <div class="form-row">
+        <label for="selectType">Select Enrollment No. or Seat No.</label>
+        <div class="input-wrap">
+          <select id="selectType">
+            <option value="">(See Below)</option>
+            <option value="seat">Seat No</option>
+            <option value="enrollment">Enrollment No</option>
+          </select>
+          <div class="error-msg" id="selectTypeErr"></div>
+        </div>
+      </div>
+
+      <!-- Row 2: Number input -->
+      <div class="form-row">
+        <label for="seatInput">Enter Enrollment No. Or Seat No.</label>
+        <div class="input-wrap">
+          <input type="text" id="seatInput" placeholder="" maxlength="20" />
+          <div class="error-msg" id="seatInputErr"></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Captcha image -->
+      <div class="form-row">
+        <label>Captcha</label>
+        <div class="input-wrap">
+          <div class="captcha-display" onclick="generateCaptcha()" style="cursor:pointer;" title="Click to refresh captcha">
+            <canvas id="captchaCanvas" width="180" height="50"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Captcha input -->
+      <div class="form-row">
+        <label for="captchaInput">Type Above Captcha Here</label>
+        <div class="input-wrap">
+          <input type="text" id="captchaInput" placeholder="" maxlength="10" />
+          <div class="error-msg" id="captchaErr"></div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="btn-row">
+        <button class="btn-show" onclick="validateAndSubmit()">
+          <span style="color:#FFA500; font-size:1.1em; font-weight:900;">S</span>howResult
+        </button>
+      </div>
+
+    </div><!-- /form-box -->
+  </div><!-- /form-wrapper -->
+</div><!-- /formPage -->
+
+<!-- ===== RESULT PAGE ===== -->
+<div id="resultPage" class="page">
+  <div class="result-wrapper">
+    <div class="result-card">
+
+      <div class="student-info" id="studentInfo">
+        <!-- filled by JS -->
+      </div>
+
+      <table class="marks-table">
+        <thead>
+          <tr>
+            <th>Sr.</th>
+            <th>Subject Code</th>
+            <th>Subject Name</th>
+            <th>Theory Marks (100)</th>
+            <th>Practical Marks (50)</th>
+            <th>Total</th>
+            <th>Grade</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="marksBody">
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+
+      <div class="result-summary" id="resultSummary">
+        <!-- filled by JS -->
+      </div>
+
+      <div>
+        <button class="btn-back" onclick="showPage('formPage')">← Back to Search</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ─── Captcha Generation ─── */
+  let captchaText = '';
+
+  function generateCaptcha() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    captchaText = '';
+    for (let i = 0; i < 6; i++) captchaText += chars[Math.floor(Math.random() * chars.length)];
+
+    const canvas = document.getElementById('captchaCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Background
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Noise lines
+    for (let i = 0; i < 6; i++) {
+      ctx.strokeStyle = `hsl(${Math.random()*360},60%,70%)`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(Math.random()*180, Math.random()*50);
+      ctx.lineTo(Math.random()*180, Math.random()*50);
+      ctx.stroke();
+    }
+
+    // Dots
+    for (let i = 0; i < 30; i++) {
+      ctx.fillStyle = `hsl(${Math.random()*360},60%,70%)`;
+      ctx.beginPath();
+      ctx.arc(Math.random()*180, Math.random()*50, 1.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Characters
+    const colors = ['#8B0000','#a06000','#00008B','#006400','#800080'];
+    ctx.font = 'bold 26px Georgia, serif';
+    captchaText.split('').forEach((ch, i) => {
+      ctx.save();
+      ctx.fillStyle = colors[i % colors.length];
+      const x = 14 + i * 27;
+      const y = 34 + Math.sin(i * 1.2) * 4;
+      ctx.translate(x, y);
+      ctx.rotate((Math.random() - 0.5) * 0.4);
+      ctx.fillText(ch, 0, 0);
+      ctx.restore();
+    });
+
+    // Strike-through line
+    ctx.strokeStyle = 'rgba(150,0,0,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(10, 28 + Math.random()*8);
+    ctx.lineTo(170, 28 + Math.random()*8);
+    ctx.stroke();
+
+    document.getElementById('captchaInput').value = '';
+  }
+
+  /* ─── Page Switching ─── */
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  /* ─── Reset Form ─── */
+  function resetForm() {
+    document.getElementById('selectType').value = '';
+    document.getElementById('seatInput').value = '';
+    document.getElementById('captchaInput').value = '';
+    clearErrors();
+    generateCaptcha();
+  }
+
+  function clearErrors() {
+    ['selectType','seatInput','captchaInput'].forEach(id => {
+      document.getElementById(id).classList.remove('error');
+    });
+    ['selectTypeErr','seatInputErr','captchaErr'].forEach(id => {
+      document.getElementById(id).textContent = '';
+    });
+  }
+
+  function setError(inputId, errId, msg) {
+    document.getElementById(inputId).classList.add('error');
+    document.getElementById(errId).textContent = msg;
+    return false;
+  }
+
+  /* ─── Validation ─── */
+  function validateAndSubmit() {
+    clearErrors();
+    let valid = true;
+
+    const type = document.getElementById('selectType').value;
+    const num  = document.getElementById('seatInput').value.trim();
+    const cap  = document.getElementById('captchaInput').value.trim();
+
+    if (!type) {
+      setError('selectType','selectTypeErr','Please select Enrollment No. or Seat No.');
+      valid = false;
+    }
+
+    if (!num) {
+      setError('seatInput','seatInputErr','This field is required.');
+      valid = false;
+    } else if (type === 'seat' && !/^\d{6,10}$/.test(num)) {
+      setError('seatInput','seatInputErr','Seat No. must be 6-10 digits.');
+      valid = false;
+    } else if (type === 'enrollment' && !/^\d{10,15}$/.test(num)) {
+      setError('seatInput','seatInputErr','Enrollment No. must be 10-15 digits.');
+      valid = false;
+    }
+
+    if (!cap) {
+      setError('captchaInput','captchaErr','Please enter the captcha.');
+      valid = false;
+    } else if (cap !== captchaText) {
+      setError('captchaInput','captchaErr','Captcha does not match. Please try again.');
+      generateCaptcha();
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    // Show loading
+    document.getElementById('loadingOverlay').classList.add('show');
+    setTimeout(() => {
+      document.getElementById('loadingOverlay').classList.remove('show');
+      showFullScreenImage();
+    }, 2200);
+  }
+
+  function showFullScreenImage() {
+    const elem = document.getElementById('fullScreenContainer');
+    elem.style.display = 'flex';
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch(err => console.log(err));
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  }
+
+  function closeFullScreen() {
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch(err => console.log(err));
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+    document.getElementById('fullScreenContainer').style.display = 'none';
+    resetForm();
+  }
+
+  // Handle escape / exit fullscreen events
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) {
+      document.getElementById('fullScreenContainer').style.display = 'none';
+      resetForm();
+    }
+  });
+  document.addEventListener('webkitfullscreenchange', () => {
+    if (!document.webkitFullscreenElement) {
+      document.getElementById('fullScreenContainer').style.display = 'none';
+      resetForm();
+    }
+  });
+
+  /* ─── Build Mock Result ─── */
+  function buildResult(num, type) {
+    // Student info
+    const names = ['Rahul Suresh Patil','Priya Anil Deshmukh','Akash Ramesh Jadhav','Sneha Vijay Kulkarni'];
+    const courses = ['Computer Engineering','Mechanical Engineering','Civil Engineering','Electronics & Telecommunication'];
+    const institutes = ['Government Polytechnic, Pune','Shri Bhausaheb Vartak Polytechnic, Vasai','S.H. Jondhale Polytechnic, Thane','S.I.E.S. Polytechnic, Sion'];
+    const idx = Math.floor(Math.random() * 4);
+
+    document.getElementById('studentInfo').innerHTML = `
+      <div class="info-row"><span class="info-label">${type === 'seat' ? 'Seat No.' : 'Enrollment No.'}</span><span class="info-value">${num}</span></div>
+      <div class="info-row"><span class="info-label">Student Name</span><span class="info-value">${names[idx]}</span></div>
+      <div class="info-row"><span class="info-label">Course</span><span class="info-value">${courses[idx]}</span></div>
+      <div class="info-row"><span class="info-label">Institute</span><span class="info-value">${institutes[idx]}</span></div>
+      <div class="info-row"><span class="info-label">Examination</span><span class="info-value">Summer 2024</span></div>
+      <div class="info-row"><span class="info-label">Semester</span><span class="info-value">IV (Fourth)</span></div>
+    `;
+
+    // Marks
+    const subjects = [
+      ['22419', 'Industrial Management & Entrepreneurship', 68, 40],
+      ['22420', 'Advanced Java Programming', 72, 44],
+      ['22421', 'Software Testing', 61, 38],
+      ['22422', 'Embedded System', 55, 35],
+      ['22423', 'Data Communication & Networking', 70, 43],
+      ['22424', 'Project (Term Work)', 0, 48],
+    ];
+
+    let totalMarks = 0, maxMarks = 0;
+    let tbody = '';
+    const grades = {'O':'91-100','A+':'81-90','A':'71-80','B+':'61-70','B':'51-60','C':'41-50'};
+
+    subjects.forEach((s, i) => {
+      const isProject = s[0] === '22424';
+      const theory = isProject ? '-' : s[2];
+      const practical = s[3];
+      const total = isProject ? practical : (s[2] + practical);
+      const max = isProject ? 50 : 150;
+      const pct = Math.round((total / max) * 100);
+      let grade = 'C', status = 'PASS';
+      if (pct >= 91) grade = 'O';
+      else if (pct >= 81) grade = 'A+';
+      else if (pct >= 71) grade = 'A';
+      else if (pct >= 61) grade = 'B+';
+      else if (pct >= 51) grade = 'B';
+      else if (pct < 40) { grade = 'F'; status = 'FAIL'; }
+      totalMarks += total; maxMarks += max;
+      tbody += `<tr>
+        <td>${i+1}</td><td>${s[0]}</td><td style="text-align:left">${s[1]}</td>
+        <td>${theory}</td><td>${practical}</td><td>${total}</td>
+        <td>${grade}</td>
+        <td class="${status === 'PASS' ? 'pass' : 'fail'}">${status}</td>
+      </tr>`;
+    });
+    document.getElementById('marksBody').innerHTML = tbody;
+
+    const overall = Math.round((totalMarks/maxMarks)*100);
+    let oGrade = 'C';
+    if (overall >= 91) oGrade = 'O';
+    else if (overall >= 81) oGrade = 'A+';
+    else if (overall >= 71) oGrade = 'A';
+    else if (overall >= 61) oGrade = 'B+';
+    else if (overall >= 51) oGrade = 'B';
+
+    document.getElementById('resultSummary').innerHTML = `
+      <div class="summary-item">Total Marks Obtained: <span>${totalMarks} / ${maxMarks}</span></div>
+      <div class="summary-item">Percentage: <span>${overall}%</span></div>
+      <div class="summary-item">Grade: <span>${oGrade}</span></div>
+      <div class="summary-item">Overall Result: <span class="${overall >= 40 ? 'pass' : 'fail'}">${overall >= 40 ? '✅ PASS' : '❌ FAIL'}</span></div>
+      <div style="width:100%">
+        <span class="result-badge ${overall >= 40 ? 'pass-badge' : 'fail-badge'}">
+          ${overall >= 40 ? '🎉 CONGRATULATIONS! You have PASSED the examination.' : '❌ You have FAILED the examination. Better luck next time.'}
+        </span>
+      </div>
+    `;
+  }
+
+  /* ─── Init ─── */
+  generateCaptcha();
+</script>
+</body>
+</html>
